@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="NeuroCalc.vcxproj" Id="a39221ce-a91f-4fd0-b04c-a8ea861c56cb" />
+</Solution>
