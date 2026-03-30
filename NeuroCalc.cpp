@@ -310,7 +310,7 @@ int main()
 	aveLoss /= 100;
 	std::print("平均 loss: {}", aveLoss);
 
-	int epoch = 4000;
+	int epoch = 500;
 	double learningRate = 0.01;
 	std::print("\n开始训练, 训练轮数: {}, 学习率: {}\n", epoch, learningRate);
 
