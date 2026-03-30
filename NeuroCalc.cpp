@@ -412,7 +412,15 @@ int main()
 		std::getline(std::cin, input);  // 读取整行
 		std::vector<double> inputVec = stringToVector(input);
 		double neuroAnsAfter = neuroCalc(inputVec, inputWeight, inputBias, hideWeight, hideBias) * 100;
-		std::print("\033[1A\r{} {} {} = {}\n", inputVec[0], vectorToOp(inputVec), inputVec[1], neuroAnsAfter);
+		double rightAns = clacVector(inputVec);
+
+
+		double delta = abs((rightAns - neuroAnsAfter) / rightAns) * 100;
+
+		std::print("\033[1A\r{} {} {} = {} | {} {:.2f}%\n", inputVec[0], vectorToOp(inputVec), inputVec[1], neuroAnsAfter, rightAns, delta);
+
+
+		
 	}
 
 
