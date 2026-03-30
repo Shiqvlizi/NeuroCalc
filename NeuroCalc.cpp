@@ -293,7 +293,7 @@ int main()
 		char op = vectorToOp(testVector);
 
 
-		double neuroAns = neuroCalc(testVector, inputWeight, inputBias, hideWeight, hideBias)*100;
+		double neuroAns = neuroCalc(testVector, inputWeight, inputBias, hideWeight, hideBias) * 100;
 
 
 
@@ -318,98 +318,40 @@ int main()
 
 	for (int round = 0; round < epoch; round++)
 	{
-
-
-
-		// 生成
-		std::vector<std::string> testCases(100, "");
-
-		std::uniform_real_distribution<double> testRand(-10.0, 10.0);
-
-		std::stringstream ss;
-		for (int i = 0; i < 100; i++)
+		for (int testCase = 0; testCase < 100; testCase++)
 		{
+			std::vector<double> testVector(6, 0);
+			testVector[0] = testRand(gen);
 
-			ss.str("");
-			ss.clear();
-			ss << testRand(gen);
 			double opFlag = testRand(gen);
-
 			bool isDivision = false;
 			if (opFlag <= -5)
 			{
-				ss << '+';
+				testVector[2] = 1;
 			}
 			else if (opFlag <= 0)
 			{
-				ss << '-';
+				testVector[3] = 1;
 			}
 			else if (opFlag <= 5)
 			{
-				ss << '*';
+				testVector[4] = 1;
 			}
 			else
 			{
-				ss << '/';
+				testVector[5] = 1;
 				isDivision = true;
 			}
+
 			double num2 = testRand(gen);
-			if (isDivision && num2 >= -0.1 && num2 <= 0.1)
+			while (isDivision && num2 >= -0.1 && num2 <= 0.1)
 			{
-				bool isBig = false;
-				while (!isBig)
-				{
-					num2 = testRand(gen);
-					if (num2 >= -0.1 && num2 <= 0.1)
-					{
-						continue;
-					}
-					else
-					{
-						break;
-					}
-				}
+				num2 = testRand(gen);
 			}
-			ss << num2;
+			testVector[1] = num2;
 
-
-			testCases[i] = ss.str();
-		}
-
-		std::vector<std::vector<double>> testVec(100, std::vector<double>(6, 0));
-		std::vector<std::vector<double>> testVecNorm(100, std::vector<double>(6, 0));
-		for (int i = 0; i < 100; i++)
-		{
-			testVec[i] = stringToVector(testCases[i]);
-			testVecNorm[i] = vectorNorm(testVec[i]);
-
-		}
-
-		std::vector<double> ansRight(100, 0);
-		for (int i = 0; i < 100; i++)
-		{
-			ansRight[i] = clacVector(testVec[i]);
-		}
-		// 生成结束
-
-
-
-
-
-		std::vector<std::vector<double>> aveInputWeightDiff(NEURO_NODES, std::vector<double>(6, 0));
-		std::vector<double> aveInputBiasDiff(NEURO_NODES, 0);
-
-		std::vector<double> aveHideWeightDiff(NEURO_NODES, 0);
-		double aveHideBiasDiff = 0;
-
-
-
-		for (int testCase = 0; testCase < 100; testCase++)
-		{
-			const std::vector<double>& testVector = testVec[testCase];
-			const std::vector<double>& normalizedInput = testVecNorm[testCase];
-
-			double normalizedAnsRight = ansRight[testCase] / 100.0;
+			std::vector<double> normalizedInput = vectorNorm(testVector);
+			double normalizedAnsRight = clacVector(testVector) / 100.0;
 
 			double neuroAns = neuroCalc(testVector, inputWeight, inputBias, hideWeight, hideBias, hideInput, rawHideInput);
 			double errorTerm = 2 * (neuroAns - normalizedAnsRight);
@@ -418,42 +360,18 @@ int main()
 			{
 				double reluGrad = (rawHideInput[i] > 0 ? 1.0 : 0.0);
 				double inputLayerTerm = errorTerm * hideWeight[i] * reluGrad;
-				auto& weightDiffRow = aveInputWeightDiff[i];
 
 				for (int j = 0; j < 6; j++)
 				{
-					weightDiffRow[j] += inputLayerTerm * normalizedInput[j];
+					inputWeight[i][j] -= learningRate * inputLayerTerm * normalizedInput[j];
 				}
 
-				aveInputBiasDiff[i] += inputLayerTerm;
-				aveHideWeightDiff[i] += errorTerm * hideInput[i];
+				inputBias[i] -= learningRate * inputLayerTerm;
+				hideWeight[i] -= learningRate * errorTerm * hideInput[i];
 			}
 
-			aveHideBiasDiff += errorTerm;
+			hideBias -= learningRate * errorTerm;
 		}
-
-		const double updateScale = learningRate / 100.0;
-
-		for (int i = 0; i < NEURO_NODES; i++)
-		{
-			for (int j = 0; j < 6; j++)
-			{
-				inputWeight[i][j] -= aveInputWeightDiff[i][j] * updateScale;
-
-			}
-		}
-
-		for (int i = 0; i < NEURO_NODES; i++)
-		{
-			inputBias[i] -= aveInputBiasDiff[i] * updateScale;
-		}
-
-		for (int i = 0; i < NEURO_NODES; i++)
-		{
-			hideWeight[i] -= aveHideWeightDiff[i] * updateScale;
-		}
-
-		hideBias -= aveHideBiasDiff * updateScale;
 
 		std::print("\r进度: {} / {}", round + 1, epoch);
 	}
@@ -493,9 +411,9 @@ int main()
 		std::string input;
 		std::getline(std::cin, input);  // 读取整行
 		std::vector<double> inputVec = stringToVector(input);
-		double neuroAnsAfter = neuroCalc(inputVec, inputWeight, inputBias, hideWeight, hideBias)*100;
+		double neuroAnsAfter = neuroCalc(inputVec, inputWeight, inputBias, hideWeight, hideBias) * 100;
 		std::print("\033[1A\r{} {} {} = {}\n", inputVec[0], vectorToOp(inputVec), inputVec[1], neuroAnsAfter);
 	}
-	
-	
+
+
 }
