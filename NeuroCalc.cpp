@@ -341,7 +341,7 @@ int main()
 				for (int j = 0; j < 6; j++)
 				{
 					double input =  
-					aveInputWeightDiff[i][j] += 2 * (neuroAns - ansRight[testCase]) * hideWeight[i] * (inputWeight[i][j] * testVecNorm[testCase][j] + inputBias[i] > 0 ? 1 : 0) * testVecNorm[testCase][j];
+					aveInputWeightDiff[i][j] += 2 * (neuroAns - ansRight[testCase]) * hideWeight[i] * (rawHideInput[i] > 0 ? 1 : 0) * testVecNorm[testCase][j];
 				}
 			}
 
