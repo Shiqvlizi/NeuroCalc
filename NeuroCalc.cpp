@@ -274,8 +274,6 @@ int main()
 	std::vector<double> ansRight(100, 0);
 	for (int i = 0; i < 100; i++)
 	{
-		char op = vectorToOp(testVec[i]);
-
 		ansRight[i] = clacVector(testVec[i]);
 	}
 
@@ -390,8 +388,6 @@ int main()
 		std::vector<double> ansRight(100, 0);
 		for (int i = 0; i < 100; i++)
 		{
-			char op = vectorToOp(testVec[i]);
-
 			ansRight[i] = clacVector(testVec[i]);
 		}
 		// 生成结束
@@ -410,68 +406,54 @@ int main()
 
 		for (int testCase = 0; testCase < 100; testCase++)
 		{
-
-			std::string test = testCases[testCase];
-			std::vector<double> testVector = stringToVector(test);
+			const std::vector<double>& testVector = testVec[testCase];
+			const std::vector<double>& normalizedInput = testVecNorm[testCase];
 
 			double normalizedAnsRight = ansRight[testCase] / 100.0;
 
 			double neuroAns = neuroCalc(testVector, inputWeight, inputBias, hideWeight, hideBias, hideInput, rawHideInput);
+			double errorTerm = 2 * (neuroAns - normalizedAnsRight);
 
-			
 			for (int i = 0; i < NEURO_NODES; i++)
 			{
+				double reluGrad = (rawHideInput[i] > 0 ? 1.0 : 0.0);
+				double inputLayerTerm = errorTerm * hideWeight[i] * reluGrad;
+				auto& weightDiffRow = aveInputWeightDiff[i];
+
 				for (int j = 0; j < 6; j++)
 				{
-					aveInputWeightDiff[i][j] += 2 * (neuroAns - normalizedAnsRight) * hideWeight[i] * (rawHideInput[i] > 0 ? 1 : 0) * testVecNorm[testCase][j];
+					weightDiffRow[j] += inputLayerTerm * normalizedInput[j];
 				}
+
+				aveInputBiasDiff[i] += inputLayerTerm;
+				aveHideWeightDiff[i] += errorTerm * hideInput[i];
 			}
 
-			for (int i = 0; i < NEURO_NODES; i++)
-			{
-				aveInputBiasDiff[i] += 2 * (neuroAns - normalizedAnsRight) * hideWeight[i] * (rawHideInput[i] > 0 ? 1 : 0);
-			}
-
-			for (int i = 0; i < NEURO_NODES; i++)
-			{
-				aveHideWeightDiff[i] += 2 * (neuroAns - normalizedAnsRight) * hideInput[i];
-			}
-
-			aveHideBiasDiff += 2 * (neuroAns - normalizedAnsRight);
+			aveHideBiasDiff += errorTerm;
 		}
+
+		const double updateScale = learningRate / 100.0;
 
 		for (int i = 0; i < NEURO_NODES; i++)
 		{
 			for (int j = 0; j < 6; j++)
 			{
-				aveInputWeightDiff[i][j] /= 100;
-				aveInputWeightDiff[i][j] *= learningRate;
-
-				inputWeight[i][j] -= aveInputWeightDiff[i][j];
+				inputWeight[i][j] -= aveInputWeightDiff[i][j] * updateScale;
 
 			}
 		}
 
 		for (int i = 0; i < NEURO_NODES; i++)
 		{
-			aveInputBiasDiff[i] /= 100;
-			aveInputBiasDiff[i] *= learningRate;
-
-			inputBias[i] -= aveInputBiasDiff[i];
+			inputBias[i] -= aveInputBiasDiff[i] * updateScale;
 		}
 
 		for (int i = 0; i < NEURO_NODES; i++)
 		{
-			aveHideWeightDiff[i] /= 100;
-			aveHideWeightDiff[i] *= learningRate;
-
-			hideWeight[i] -= aveHideWeightDiff[i];
+			hideWeight[i] -= aveHideWeightDiff[i] * updateScale;
 		}
 
-		aveHideBiasDiff /= 100;
-		aveHideBiasDiff *= learningRate;
-
-		hideBias -= aveHideBiasDiff;
+		hideBias -= aveHideBiasDiff * updateScale;
 
 		std::print("\r进度: {} / {}", round + 1, epoch);
 	}
