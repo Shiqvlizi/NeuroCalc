@@ -9,7 +9,7 @@
 
 const int NEURO_NODES = 64;
 
-
+// 这是一个把输入形如 "2*3" 的字符串转化为 [2, 3, 0, 0, 1, 0] 的函数
 std::vector<double> stringToVector(std::string input)
 {
 	std::vector<double> res(6, 0);
@@ -55,7 +55,7 @@ std::vector<double> stringToVector(std::string input)
 	return res;
 }
 
-
+// 这是一个把 [2, 3, 0, 0, 1, 0] 的矩阵变成 [0.2, 0.3, 0, 0, 1, 0] 的函数
 std::vector<double> vectorNorm(std::vector<double> input)
 {
 	input[0] /= 10;
@@ -63,7 +63,7 @@ std::vector<double> vectorNorm(std::vector<double> input)
 	return input;
 }
 
-
+// 这是一个把 [2, 3, 0, 0, 1, 0] 变成 6 的函数
 double clacVector(std::vector<double> input)
 {
 	if (input[2] == 1)
@@ -85,7 +85,7 @@ double clacVector(std::vector<double> input)
 	return 0.0;
 }
 
-
+// 这是一个提取输入矩阵的操作符的函数
 char vectorToOp(std::vector<double> input)
 {
 	if (input[2] == 1)
@@ -108,7 +108,7 @@ char vectorToOp(std::vector<double> input)
 }
 
 
-
+// 这是神经网络计算的结果
 double neuroCalc(
 	const std::vector<double>& input,
 	const std::vector<std::vector<double>>& inputWeight,
@@ -140,7 +140,7 @@ double neuroCalc(
 }
 
 
-
+// 这是神经网络计算的结果, 但是同时输出了隐藏层的输入
 double neuroCalc(
 	const std::vector<double>& input,
 	const std::vector<std::vector<double>>& inputWeight,
@@ -312,7 +312,7 @@ int main()
 	aveLoss /= 100;
 	std::print("平均 loss: {}", aveLoss);
 
-	int epoch = 10000;
+	int epoch = 500000;
 	double learningRate = 0.01;
 	std::print("\n开始训练, 训练轮数: {}, 学习率: {}\n", epoch, learningRate);
 
