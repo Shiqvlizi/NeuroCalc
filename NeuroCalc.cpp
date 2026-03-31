@@ -174,6 +174,23 @@ double neuroCalc(
 }
 
 
+double logNormalize(double x)
+{
+	double sign = (x >= 0.0 ? 1.0 : -1.0);
+
+	return sign * (log(abs(x) + 1.0)) / log(100.0);
+
+}
+
+double inverseLogNormalize(double x)
+{
+	double sign = (x >= 0.0 ? 1.0 : -1.0);
+
+	return  sign * (pow(100.0, abs(x)) - 1.0);
+}
+
+
+
 int main()
 {
 
@@ -292,8 +309,11 @@ int main()
 		std::vector<double> testVector = stringToVector(test);
 		char op = vectorToOp(testVector);
 
+		// 神经网络输出的是除以 100 的值, 此处 "*100" 为反归一化
+		// 反处理
+		// 现在使用 log_100 x, 让输出空间更均匀
+		double neuroAns = inverseLogNormalize(neuroCalc(testVector, inputWeight, inputBias, hideWeight, hideBias));
 
-		double neuroAns = neuroCalc(testVector, inputWeight, inputBias, hideWeight, hideBias) * 100;
 
 
 
@@ -312,7 +332,7 @@ int main()
 	aveLoss /= 100;
 	std::print("平均 loss: {}", aveLoss);
 
-	int epoch = 500000;
+	int epoch = 10000;
 	double learningRate = 0.01;
 	std::print("\n开始训练, 训练轮数: {}, 学习率: {}\n", epoch, learningRate);
 
@@ -351,10 +371,10 @@ int main()
 			testVector[1] = num2;
 
 			std::vector<double> normalizedInput = vectorNorm(testVector);
-			double normalizedAnsRight = clacVector(testVector) / 100.0;
+			double logNormalizedAnsRight = logNormalize(clacVector(testVector));
 
 			double neuroAns = neuroCalc(testVector, inputWeight, inputBias, hideWeight, hideBias, hideInput, rawHideInput);
-			double errorTerm = 2 * (neuroAns - normalizedAnsRight);
+			double errorTerm = 2 * (neuroAns - logNormalizedAnsRight);
 
 			for (int i = 0; i < NEURO_NODES; i++)
 			{
@@ -388,7 +408,7 @@ int main()
 
 		double rawNeuroAns = neuroCalc(testVector, inputWeight, inputBias, hideWeight, hideBias);
 
-		double realNeuroAns = rawNeuroAns * 100.0;
+		double realNeuroAns = inverseLogNormalize(rawNeuroAns);
 
 		double delta = abs((ansRight[i] - realNeuroAns) / ansRight[i]) * 100;
 
@@ -411,7 +431,7 @@ int main()
 		std::string input;
 		std::getline(std::cin, input);  // 读取整行
 		std::vector<double> inputVec = stringToVector(input);
-		double neuroAnsAfter = neuroCalc(inputVec, inputWeight, inputBias, hideWeight, hideBias) * 100;
+		double neuroAnsAfter = inverseLogNormalize(neuroCalc(inputVec, inputWeight, inputBias, hideWeight, hideBias) );
 		double rightAns = clacVector(inputVec);
 
 
@@ -420,7 +440,7 @@ int main()
 		std::print("\033[1A\r{} {} {} = {} | {} {:.2f}%\n", inputVec[0], vectorToOp(inputVec), inputVec[1], neuroAnsAfter, rightAns, delta);
 
 
-		
+
 	}
 
 
