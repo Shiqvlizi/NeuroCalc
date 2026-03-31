@@ -182,7 +182,7 @@ int main()
 	std::random_device rd;
 	std::mt19937 gen(rd());
 
-	std::uniform_real_distribution<double> weightRend(-1.0, 1.0);
+	std::uniform_real_distribution<double> weightRand(-1.0, 1.0);
 	// double random_real = dist_real(gen);
 
 	std::vector<std::vector<double>> inputWeight(NEURO_NODES, std::vector<double>(6, 0));
@@ -199,13 +199,13 @@ int main()
 	{
 		for (double& j : i)
 		{
-			j = weightRend(gen);
+			j = weightRand(gen);
 		}
 	}
 
 	for (double& i : hideWeight)
 	{
-		i = weightRend(gen);
+		i = weightRand(gen);
 	}
 
 	std::vector<std::string> testCases(100, "");
